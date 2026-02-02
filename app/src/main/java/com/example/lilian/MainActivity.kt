@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -15,6 +16,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.lilian.ui.ViewModelFactory
+import com.example.lilian.ui.admin.AdminScreen
 import com.example.lilian.ui.auth.AuthViewModel
 import com.example.lilian.ui.auth.LoginScreen
 import com.example.lilian.ui.auth.RegisterScreen
@@ -22,6 +24,7 @@ import com.example.lilian.ui.content.ContentDetailScreen
 import com.example.lilian.ui.content.ContentScreen
 import com.example.lilian.ui.content.ContentViewModel
 import com.example.lilian.ui.content.VideoPlayerScreen
+import com.example.lilian.ui.profile.ProfileScreen
 import com.example.lilian.ui.theme.LilianTheme
 import com.example.lilian.utils.SessionManager
 import java.net.URLEncoder
@@ -39,6 +42,7 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppNavigation() {
     val context = LocalContext.current
@@ -78,14 +82,25 @@ fun AppNavigation() {
         composable("content") {
             ContentScreen(
                 viewModel = contentViewModel,
+                userSession = userSession,
+                onNavigateToAdmin = { navController.navigate("admin") },
+                onNavigateToProfile = { navController.navigate("profile") },
+                onContentClick = { content ->
+                    navController.navigate("content_detail/${content.id}")
+                }
+            )
+        }
+        composable("admin") {
+            AdminScreen()
+        }
+        composable("profile") {
+            ProfileScreen(
+                userSession = userSession,
                 onLogout = {
                     authViewModel.logout()
                     navController.navigate("login") {
-                        popUpTo("content") { inclusive = true }
+                        popUpTo(0) { inclusive = true }
                     }
-                },
-                onContentClick = { content ->
-                    navController.navigate("content_detail/${content.id}")
                 }
             )
         }

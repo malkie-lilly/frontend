@@ -30,14 +30,14 @@ fun LoginScreen(
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
     
-    val loginState by viewModel.loginState.collectAsState()
+    val authState by viewModel.authState.collectAsState()
     val context = LocalContext.current
     
-    LaunchedEffect(loginState) {
-        if (loginState is LoginState.Success) {
+    LaunchedEffect(authState) {
+        if (authState is AuthState.LoginSuccess) {
             onLoginSuccess()
-        } else if (loginState is LoginState.Error) {
-            Toast.makeText(context, (loginState as LoginState.Error).message, Toast.LENGTH_LONG).show()
+        } else if (authState is AuthState.Error) {
+            Toast.makeText(context, (authState as AuthState.Error).message, Toast.LENGTH_LONG).show()
         }
     }
     
@@ -72,7 +72,8 @@ fun LoginScreen(
                     leadingIcon = { Icon(Icons.Default.Email, contentDescription = null) },
                     modifier = Modifier.fillMaxWidth(),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-                    singleLine = true
+                    singleLine = true,
+                    enabled = authState !is AuthState.Loading
                 )
                 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -93,7 +94,8 @@ fun LoginScreen(
                     visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                     modifier = Modifier.fillMaxWidth(),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                    singleLine = true
+                    singleLine = true,
+                    enabled = authState !is AuthState.Loading
                 )
                 
                 Spacer(modifier = Modifier.height(24.dp))
@@ -101,9 +103,9 @@ fun LoginScreen(
                 Button(
                     onClick = { viewModel.login(email, password) },
                     modifier = Modifier.fillMaxWidth().height(56.dp),
-                    enabled = loginState !is LoginState.Loading
+                    enabled = authState !is AuthState.Loading
                 ) {
-                    if (loginState is LoginState.Loading) {
+                    if (authState is AuthState.Loading) {
                         CircularProgressIndicator(color = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.size(24.dp))
                     } else {
                         Text("Login", fontSize = 18.sp)
@@ -114,7 +116,7 @@ fun LoginScreen(
         
         Spacer(modifier = Modifier.height(24.dp))
         
-        TextButton(onClick = onNavigateToRegister) {
+        TextButton(onClick = onNavigateToRegister, enabled = authState !is AuthState.Loading) {
             Text("Don't have an account? Register")
         }
     }

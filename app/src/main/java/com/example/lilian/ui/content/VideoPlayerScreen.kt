@@ -8,6 +8,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.media3.common.MediaItem
 import androidx.media3.common.util.UnstableApi
@@ -15,6 +16,7 @@ import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.ui.PlayerView
 
 @OptIn(UnstableApi::class)
+@ExperimentalMaterial3Api
 @Composable
 fun VideoPlayerScreen(
     videoUrl: String,
@@ -38,7 +40,7 @@ fun VideoPlayerScreen(
 
     Scaffold(
         topBar = {
-            SmallTopAppBar(
+            TopAppBar(
                 title = { Text(title) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
@@ -62,7 +64,6 @@ fun VideoPlayerScreen(
             
             Spacer(modifier = Modifier.height(16.dp))
             
-            // Add description or other details here if needed
             Text(
                 text = "Now Playing: $title",
                 modifier = Modifier.padding(16.dp),

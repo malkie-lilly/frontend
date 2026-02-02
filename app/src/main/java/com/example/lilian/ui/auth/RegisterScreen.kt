@@ -32,8 +32,22 @@ fun RegisterScreen(
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     
-    // In a real app, we'd add registration state to ViewModel
-    // For now, let's just use a simple mock or navigate back to login
+    val authState by viewModel.authState.collectAsState()
+    
+    LaunchedEffect(authState) {
+        when (authState) {
+            is AuthState.RegisterSuccess -> {
+                Toast.makeText(context, (authState as AuthState.RegisterSuccess).message, Toast.LENGTH_LONG).show()
+                viewModel.resetState()
+                onRegisterSuccess()
+            }
+            is AuthState.Error -> {
+                Toast.makeText(context, (authState as AuthState.Error).message, Toast.LENGTH_LONG).show()
+                viewModel.resetState()
+            }
+            else -> {}
+        }
+    }
     
     Column(
         modifier = Modifier
@@ -65,7 +79,8 @@ fun RegisterScreen(
                     label = { Text("Username") },
                     leadingIcon = { Icon(Icons.Default.Person, contentDescription = null) },
                     modifier = Modifier.fillMaxWidth(),
-                    singleLine = true
+                    singleLine = true,
+                    enabled = authState !is AuthState.Loading
                 )
                 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -77,7 +92,8 @@ fun RegisterScreen(
                     leadingIcon = { Icon(Icons.Default.Email, contentDescription = null) },
                     modifier = Modifier.fillMaxWidth(),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-                    singleLine = true
+                    singleLine = true,
+                    enabled = authState !is AuthState.Loading
                 )
                 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -90,26 +106,35 @@ fun RegisterScreen(
                     visualTransformation = PasswordVisualTransformation(),
                     modifier = Modifier.fillMaxWidth(),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                    singleLine = true
+                    singleLine = true,
+                    enabled = authState !is AuthState.Loading
                 )
                 
                 Spacer(modifier = Modifier.height(24.dp))
                 
                 Button(
                     onClick = { 
-                        // Mock register for now or implement in ViewModel
-                        Toast.makeText(context, "Registration feature coming soon", Toast.LENGTH_SHORT).show()
+                        if (username.isBlank() || email.isBlank() || password.isBlank()) {
+                            Toast.makeText(context, "Please fill all fields", Toast.LENGTH_SHORT).show()
+                        } else {
+                            viewModel.register(username, email, password)
+                        }
                     },
-                    modifier = Modifier.fillMaxWidth().height(56.dp)
+                    modifier = Modifier.fillMaxWidth().height(56.dp),
+                    enabled = authState !is AuthState.Loading
                 ) {
-                    Text("Register", fontSize = 18.sp)
+                    if (authState is AuthState.Loading) {
+                        CircularProgressIndicator(color = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.size(24.dp))
+                    } else {
+                        Text("Register", fontSize = 18.sp)
+                    }
                 }
             }
         }
         
         Spacer(modifier = Modifier.height(24.dp))
         
-        TextButton(onClick = onNavigateToLogin) {
+        TextButton(onClick = onNavigateToLogin, enabled = authState !is AuthState.Loading) {
             Text("Already have an account? Login")
         }
     }
